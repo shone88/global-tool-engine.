@@ -20,6 +20,7 @@ data = [
     {"name": "Freelance Net Income Calculator", "rate": 0.70, "slug": "net-income-calc"}
 ]
 
+# Obrati paznju: Koristimo {{ }} za CSS i JS da Python ne bi prijavio gresku
 template = """
 <!DOCTYPE html>
 <html lang="en">
@@ -44,7 +45,8 @@ template = """
     <script>
         function run() {{
             let v = document.getElementById('inp').value;
-            document.getElementById('out').innerText = "Result: " + (v * {rate}).toFixed(2);
+            let res = (v * {rate}).toFixed(2);
+            document.getElementById('out').innerText = "Result: " + res;
         }}
     </script>
 </body>
@@ -54,13 +56,19 @@ template = """
 def build():
     if not os.path.exists('public'): os.makedirs('public')
     for item in data:
-        content = template.format(name=item['name'], rate=item['rate'], adsense=adsense_code)
+        # Prosledjujemo vrednosti u template
+        content = template.format(
+            name=item['name'], 
+            rate=item['rate'], 
+            adsense=adsense_code
+        )
         with open(f"public/{item['slug']}.html", "w", encoding="utf-8") as f:
             f.write(content)
     
+    # Generisanje pocetne strane
     with open("public/index.html", "w", encoding="utf-8") as f:
         links = "".join([f'<li><a href="{i["slug"]}.html" style="color:#39FF14">{i["name"]}</a></li>' for i in data])
-        f.write(f"<html><head>{adsense_code}</head><body style='background:#000;color:#39FF14;font-family:monospace;'><h1>Asset Engine 2026</h1><ul>{links}</ul></body></html>")
+        f.write(f"<html><head>{adsense_code}</head><body style='background:#000;color:#39FF14;font-family:monospace;'><h1>Asset Engine 2026</h1><hr><ul>{links}</ul></body></html>")
 
 if __name__ == "__main__":
     build()
