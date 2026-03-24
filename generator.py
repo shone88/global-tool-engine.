@@ -1,14 +1,16 @@
 import os
 
 # 1. TVOJ ADSENSE PODACI
-# Koristimo tvoj ca-pub ID sa verifikacionog ekrana
 adsense_id = "ca-pub-9205810258768369"
 adsense_code = f"""
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={adsense_id}"
      crossorigin="anonymous"></script>
 """
 
-# 2. PROŠIRENA BAZA PODATAKA (Porezi, Inženjering, Tehnologija 2026)
+# TVOJ GLAVNI DOMEN (Obavezno za Sitemap)
+base_url = "https://global-tool-engine.vercel.app"
+
+# 2. BAZA PODATAKA
 data = [
     {"name": "Customs Duty Serbia 2026", "rate": 0.10, "slug": "carina-srbija-2026"},
     {"name": "Germany Freelance Tax 2026", "rate": 0.19, "slug": "germany-tax-calc"},
@@ -28,7 +30,7 @@ data = [
     {"name": "Tesla Supercharger Cost Est.", "rate": 0.45, "slug": "ev-charge-cost"}
 ]
 
-# 3. HTML TEMPLATE (Sa udvostručenim zagradama {{ }} za CSS i JS)
+# 3. HTML TEMPLATE
 template = """
 <!DOCTYPE html>
 <html lang="en">
@@ -73,63 +75,32 @@ template = """
 """
 
 def build():
-    # Kreiranje foldera za sajt
-    if not os.path.exists('public'): 
-        os.makedirs('public')
+    if not os.path.exists('public'): os.makedirs('public')
     
-    # 4. GENERISANJE ADS.TXT (Obavezno za Google)
+    # 4. ADS.TXT
     with open("public/ads.txt", "w", encoding="utf-8") as f:
         f.write(f"google.com, {adsense_id.replace('ca-', '')}, DIRECT, f08c47fec0942fa0")
     
-    # 5. GENERISANJE POJEDINAČNIH ALATA
+    # 5. SITEMAP.XML (NOVO - Za Google indeksiranje)
+    sitemap_entries = [f"<url><loc>{base_url}/index.html</loc></url>", f"<url><loc>{base_url}/privacy.html</loc></url>"]
+    
+    # 6. GENERISANJE STRANICA I SITEMAP ULAZA
     for item in data:
-        content = template.format(
-            name=item['name'], 
-            rate=item['rate'], 
-            adsense=adsense_code
-        )
+        content = template.format(name=item['name'], rate=item['rate'], adsense=adsense_code)
         with open(f"public/{item['slug']}.html", "w", encoding="utf-8") as f:
             f.write(content)
+        sitemap_entries.append(f"<url><loc>{base_url}/{item['slug']}.html</loc></url>")
     
-    # 6. GENERISANJE INDEX STRANICE
-    with open("public/index.html", "w", encoding="utf-8") as f:
-        links = "".join([f'<li><a href="{i["slug"]}.html">{i["name"]}</a></li>' for i in data])
-        f.write(f"""
-        <html>
-        <head>
-            {adsense_code}
-            <title>Global Asset Engine 2026</title>
-            <style>
-                body {{ background:#000; color:#39FF14; font-family:monospace; padding:50px; }}
-                a {{ color:#39FF14; text-decoration:none; }}
-                li {{ line-height: 2; font-size: 1.2em; }}
-            </style>
-        </head>
-        <body>
-            <h1>GLOBAL ASSET ENGINE 2026</h1>
-            <hr>
-            <ul style='list-style:none; padding:0;'>{links}</ul>
-            <br>
-            <a href="privacy.html" style="font-size:0.8em;">Privacy Policy</a>
-        </body>
-        </html>
-        """)
+    with open("public/sitemap.xml", "w", encoding="utf-8") as f:
+        f.write(f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{" ".join(sitemap_entries)}</urlset>')
 
-    # 7. GENERISANJE PRIVACY POLICY (Obavezno za AdSense odobrenje)
+    # 7. INDEX I PRIVACY (Standardno)
+    links = "".join([f'<li><a href="{i["slug"]}.html">{i["name"]}</a></li>' for i in data])
+    with open("public/index.html", "w", encoding="utf-8") as f:
+        f.write(f"<html><head>{adsense_code}<style>body{{background:#000;color:#39FF14;font-family:monospace;padding:50px;}}a{{color:#39FF14;text-decoration:none;}}</style></head><body><h1>GLOBAL ENGINE 2026</h1><hr><ul style='list-style:none;padding:0;'>{links}</ul><br><a href='privacy.html' style='font-size:0.8em;'>Privacy Policy</a></body></html>")
+    
     with open("public/privacy.html", "w", encoding="utf-8") as f:
-        f.write(f"""
-        <html>
-        <head><title>Privacy Policy</title></head>
-        <body style='background:#000; color:#39FF14; font-family:monospace; padding:50px;'>
-            <h1>Privacy Policy</h1>
-            <p>Last updated: March 2026</p>
-            <p>This website uses Google AdSense to serve advertisements. Google may use cookies to serve ads based on your prior visits to this or other websites.</p>
-            <p>We do not collect any personal identification information from our users.</p>
-            <hr>
-            <a href="index.html" style="color:#39FF14">Return to Home</a>
-        </body>
-        </html>
-        """)
+        f.write(f"<html><body style='background:#000;color:#39FF14;font-family:monospace;padding:50px;'><h1>Privacy Policy</h1><p>We use Google AdSense. No personal data collected.</p><a href='index.html' style='color:#39FF14'>Back</a></body></html>")
 
 if __name__ == "__main__":
     build()
